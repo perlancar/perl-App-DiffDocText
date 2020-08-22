@@ -122,9 +122,9 @@ Use like you would use the Unix command B<diff>:
 
 =head1 DESCRIPTION
 
-This is a wrapper for the Unix command B<diff>. It assumes each file is an
-olffice word-processor documents (.doc, .docx, .odt, etc) and tries to convert
-it to plaintext first. It then pass the converted files to C<diff>.
+This is a wrapper for the Unix command B<diff>. It assumes that each file is an
+Office word-processor documents (.doc, .docx, .odt, etc) and tries to convert
+the file to plaintext first. It then passes the converted files to C<diff>.
 
 
 =head1 ENVIRONMENT
