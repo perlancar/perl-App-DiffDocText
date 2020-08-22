@@ -1,0 +1,120 @@
+#!perl
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
+
+use 5.010001;
+use strict;
+use warnings;
+use Log::ger;
+use Log::ger::Screen;
+
+use Getopt::Long;
+
+my @files;
+Getopt::Long::Configure("gnu_getopt", "no_ignore_case", "pass_through");
+
+# Getopt::Long
+#my $code_pass = sub { use DD; dd \@_; push @ARGV, $_[1] };
+
+GetOptions(
+    # XXX refactor so it's reusable
+    # normal => $code_pass,
+    # 'brief|q' => $code_pass,
+    # 'report-identical-files|s' => $code_pass,
+    # 'c' => $code_pass,
+    # 'context|C' => $code_pass,
+    # 'u' => $code_pass,
+    # 'unified|U' => $code_pass,
+    # 'ed|e' => $code_pass,
+    # 'rcs|n' => $code_pass,
+    # 'side-by-side|y' => $code_pass,
+    # 'width|W=i' => $code_pass,
+    # 'left-column' => $code_pass,
+    # 'suppress-common-lines' => $code_pass,
+    # 'show-c-function|p' => $code_pass,
+    # 'show-function-line|F=s' => $code_pass,
+    # 'label=s' => $code_pass,
+    # 'expand-tabs|t' => $code_pass,
+    # 'initial-tab|T' => $code_pass,
+    # 'tabsize=i' => $code_pass,
+    # 'suppress-blank-empty' => $code_pass,
+    # 'paginate|l' => $code_pass,
+    # 'recursive|r' => $code_pass,
+    # 'new-file|N' => $code_pass,
+    # 'unidirectional-new-file' => $code_pass,
+    # 'ignore-file-name-case!' => $code_pass,
+    # 'exclude|x=s' => $code_pass,
+    # 'exclude-from|X=s' => $code_pass, # filename
+    # 'starting-file|S' => $code_pass, # filename
+    # 'from-file=s' => $code_pass, # filename
+    # 'to-file=s' => $code_pass, # filename
+    # 'ignore-case|i' => $code_pass,
+    # 'ignore-tab-expansion|E' => $code_pass,
+    # 'ignore-trailing-space|Z' => $code_pass,
+    # 'ignore-space-change|b' => $code_pass,
+    # 'ignore-all-space|w' => $code_pass,
+    # 'ignore-blank-lines|B' => $code_pass,
+    # 'ignore-matching-lines|I=s' => $code_pass,
+    # 'text|a' => $code_pass,
+    # 'strip-trailing-cr' => $code_pass,
+    # 'ifdef|D=s' => $code_pass,
+    # 'GTYPE-group-format=s' => $code_pass,
+    # 'line-format=s' => $code_pass,
+    # 'LTYPE-line-format=s' => $code_pass,
+    # 'minimal|d' => $code_pass,
+    # 'horizon-lines=i' => $code_pass,
+    # 'speed-large-files' => $code_pass,
+    # 'help' => $code_pass,
+    # 'version|v' => $code_pass,
+
+    '<>' => sub {
+        require App::OfficeUtils;
+        my $res = App::OfficeUtils::officewp2txt(
+            input_file => $_[1],
+            fmt => 1,
+            return_output_file => 1,
+        );
+        my $file;
+        if ($res->[0] == 304) {
+            $file = $_[1];
+        } elsif ($res->[0] == 200) {
+            $file = $res->[2];
+        } else {
+            die "Can't convert doc '$_[1]' to text: $res->[0] - $res->[1]";
+        }
+        push @files, $file;
+    },
+);
+
+require IPC::System::Options;
+IPC::System::Options::system(
+    {log=>1, die=>1},
+    "diff", @ARGV, "--", @files,
+);
+
+
+# ABSTRACT: Diff the text of two Office word-processor documents (.doc, .docx, .odt, etc)
+# PODNAME:
+
+=head1 SYNOPSIS
+
+Use like you would use the Unix command B<diff>:
+
+ % diff-doc-text [options] <FILE>...
+
+
+=head1 DESCRIPTION
+
+This is a wrapper for the Unix command B<diff>. It assumes each file is an
+olffice word-processor documents (.doc, .docx, .odt, etc) and tries to convert
+it to plaintext first. It then pass the converted files to C<diff>.
+
+
+=head1 SEE ALSO
+
+Unix command L<diff>.
+
+L<App::OfficeUtils> and the included CLI L<doc2txt>.
