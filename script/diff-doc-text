@@ -9,92 +9,106 @@ use 5.010001;
 use strict;
 use warnings;
 use Log::ger;
-use Log::ger::Screen;
+#use Log::ger::Screen;
 
 use Getopt::Long;
 
 my @files;
 Getopt::Long::Configure("gnu_getopt", "no_ignore_case", "pass_through");
 
-# Getopt::Long
-#my $code_pass = sub { use DD; dd \@_; push @ARGV, $_[1] };
+my @diff_argv;
+my $code_push_opt     = sub { my ($cb, $optval) = @_; my $optname = $cb->name; push @diff_argv, (length($optname) > 1 ? "--" : "-").$optname };
+my $code_push_opt_val = sub { my ($cb, $optval) = @_; my $optname = $cb->name; push @diff_argv, (length($optname) > 1 ? "--" : "-").$optname, $optval };
+my $fail;
 
 GetOptions(
-    # XXX refactor so it's reusable
-    # normal => $code_pass,
-    # 'brief|q' => $code_pass,
-    # 'report-identical-files|s' => $code_pass,
-    # 'c' => $code_pass,
-    # 'context|C' => $code_pass,
-    # 'u' => $code_pass,
-    # 'unified|U' => $code_pass,
-    # 'ed|e' => $code_pass,
-    # 'rcs|n' => $code_pass,
-    # 'side-by-side|y' => $code_pass,
-    # 'width|W=i' => $code_pass,
-    # 'left-column' => $code_pass,
-    # 'suppress-common-lines' => $code_pass,
-    # 'show-c-function|p' => $code_pass,
-    # 'show-function-line|F=s' => $code_pass,
-    # 'label=s' => $code_pass,
-    # 'expand-tabs|t' => $code_pass,
-    # 'initial-tab|T' => $code_pass,
-    # 'tabsize=i' => $code_pass,
-    # 'suppress-blank-empty' => $code_pass,
-    # 'paginate|l' => $code_pass,
-    # 'recursive|r' => $code_pass,
-    # 'new-file|N' => $code_pass,
-    # 'unidirectional-new-file' => $code_pass,
-    # 'ignore-file-name-case!' => $code_pass,
-    # 'exclude|x=s' => $code_pass,
-    # 'exclude-from|X=s' => $code_pass, # filename
-    # 'starting-file|S' => $code_pass, # filename
-    # 'from-file=s' => $code_pass, # filename
-    # 'to-file=s' => $code_pass, # filename
-    # 'ignore-case|i' => $code_pass,
-    # 'ignore-tab-expansion|E' => $code_pass,
-    # 'ignore-trailing-space|Z' => $code_pass,
-    # 'ignore-space-change|b' => $code_pass,
-    # 'ignore-all-space|w' => $code_pass,
-    # 'ignore-blank-lines|B' => $code_pass,
-    # 'ignore-matching-lines|I=s' => $code_pass,
-    # 'text|a' => $code_pass,
-    # 'strip-trailing-cr' => $code_pass,
-    # 'ifdef|D=s' => $code_pass,
-    # 'GTYPE-group-format=s' => $code_pass,
-    # 'line-format=s' => $code_pass,
-    # 'LTYPE-line-format=s' => $code_pass,
-    # 'minimal|d' => $code_pass,
-    # 'horizon-lines=i' => $code_pass,
-    # 'speed-large-files' => $code_pass,
-    # 'help' => $code_pass,
-    # 'version|v' => $code_pass,
+    normal => $code_push_opt,
+    'brief|q' => $code_push_opt,
+    'report-identical-files|s' => $code_push_opt_val,
+    'c' => $code_push_opt,
+    'context|C' => $code_push_opt,
+    'u' => $code_push_opt,
+    'unified|U' => $code_push_opt,
+    'ed|e' => $code_push_opt,
+    'rcs|n' => $code_push_opt,
+    'side-by-side|y' => $code_push_opt,
+    'width|W=i' => $code_push_opt_val,
+    'left-column' => $code_push_opt,
+    'suppress-common-lines' => $code_push_opt,
+    'show-c-function|p' => $code_push_opt,
+    'show-function-line|F=s' => $code_push_opt_val,
+    'label=s' => $code_push_opt_val,
+    'expand-tabs|t' => $code_push_opt,
+    'initial-tab|T' => $code_push_opt,
+    'tabsize=i' => $code_push_opt_val,
+    'suppress-blank-empty' => $code_push_opt,
+    'paginate|l' => $code_push_opt,
+    'recursive|r' => $code_push_opt,
+    'new-file|N' => $code_push_opt,
+    'unidirectional-new-file' => $code_push_opt,
+    'ignore-file-name-case!' => $code_push_opt,
+    'exclude|x=s' => $code_push_opt_val,
+    'exclude-from|X=s' => $code_push_opt_val, # filename
+    'starting-file|S' => $code_push_opt_val, # filename
+    'from-file=s' => $code_push_opt_val, # filename
+    'to-file=s' => $code_push_opt_val, # filename
+    'ignore-case|i' => $code_push_opt,
+    'ignore-tab-expansion|E' => $code_push_opt,
+    'ignore-trailing-space|Z' => $code_push_opt,
+    'ignore-space-change|b' => $code_push_opt,
+    'ignore-all-space|w' => $code_push_opt,
+    'ignore-blank-lines|B' => $code_push_opt,
+    'ignore-matching-lines|I=s' => $code_push_opt_val,
+    'text|a' => $code_push_opt,
+    'strip-trailing-cr' => $code_push_opt,
+    'ifdef|D=s' => $code_push_opt_val,
+    'GTYPE-group-format=s' => $code_push_opt_val,
+    'line-format=s' => $code_push_opt_val,
+    'LTYPE-line-format=s' => $code_push_opt_val,
+    'minimal|d' => $code_push_opt,
+    'horizon-lines=i' => $code_push_opt_val,
+    'speed-large-files' => $code_push_opt,
+    'help' => $code_push_opt,
+    'version|v' => $code_push_opt,
 
     '<>' => sub {
+        my $filename = $_[0];
+        unless (-f $filename) {
+            warn "diff-doc-text: No such file or not a file: '$filename'\n";
+            $fail++;
+            return;
+        }
+
         require App::OfficeUtils;
         my $res = App::OfficeUtils::officewp2txt(
-            input_file => $_[1],
+            input_file => $filename,
             fmt => 1,
             return_output_file => 1,
         );
         my $file;
         if ($res->[0] == 304) {
-            $file = $_[1];
+            $file = $_[0];
         } elsif ($res->[0] == 200) {
             $file = $res->[2];
         } else {
-            die "Can't convert doc '$_[1]' to text: $res->[0] - $res->[1]";
+            die "Can't convert doc '$_[0]' to text: $res->[0] - $res->[1]";
         }
-        push @files, $file;
+        push @diff_argv, $file;
     },
 );
 
+exit 1 if $fail;
+
+require File::Which;
+my $diff_cmd =
+    $ENV{DIFF_DOC_TEXT_DIFF_CMD} //
+    (File::Which::which("diffwc") ? "diffwc" : undef) // "diff";
+
 require IPC::System::Options;
 IPC::System::Options::system(
-    {log=>1, die=>1},
-    "diff", @ARGV, "--", @files,
+    {log=>1},
+    $diff_cmd, @diff_argv,
 );
-
 
 # ABSTRACT: Diff the text of two Office word-processor documents (.doc, .docx, .odt, etc)
 # PODNAME:
@@ -111,6 +125,14 @@ Use like you would use the Unix command B<diff>:
 This is a wrapper for the Unix command B<diff>. It assumes each file is an
 olffice word-processor documents (.doc, .docx, .odt, etc) and tries to convert
 it to plaintext first. It then pass the converted files to C<diff>.
+
+
+=head1 ENVIRONMENT
+
+=head1 DIFF_DOC_TEXT_DIFF_CMD
+
+String. Can be used to set path to diff command. The defaultl is L<diffwc> if
+available in PATH, or C<diff>.
 
 
 =head1 SEE ALSO
