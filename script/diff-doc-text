@@ -34,7 +34,7 @@ GetOptionsCLIWrapper(
             my $res = App::OfficeUtils::officewp2txt(
                 input_file => $filename,
                 fmt => 1,
-            return_output_file => 1,
+                return_output_file => 1,
             );
             my $file;
             if ($res->[0] == 304) {
