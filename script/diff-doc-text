@@ -54,6 +54,7 @@ exit 1 if $fail;
 require File::Which;
 my $diff_cmd =
     $ENV{DIFF_DOC_TEXT_DIFF_CMD} //
+    $ENV{DIFF_CMD} //
     (File::Which::which("diffwc") ? "diffwc" : undef) // "diff";
 
 require IPC::System::Options;
@@ -81,10 +82,15 @@ the file to plaintext first. It then passes the converted files to C<diff>.
 
 =head1 ENVIRONMENT
 
+=head1 DIFF_CMD
+
+String. Can be used to set path to diff command. See also
+L</DIFF_XLS_TEXT_DIFF_CMD> which takes precedence.
+
 =head1 DIFF_DOC_TEXT_DIFF_CMD
 
 String. Can be used to set path to diff command. The defaultl is L<diffwc> if
-available in PATH, or C<diff>.
+available in PATH, or C<diff>. Takes precedence over L</DIFF_CMD>.
 
 
 =head1 SEE ALSO
