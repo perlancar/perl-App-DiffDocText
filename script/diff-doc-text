@@ -82,12 +82,12 @@ the file to plaintext first. It then passes the converted files to C<diff>.
 
 =head1 ENVIRONMENT
 
-=head1 DIFF_CMD
+=head2 DIFF_CMD
 
 String. Can be used to set path to diff command. See also
 L</DIFF_XLS_TEXT_DIFF_CMD> which takes precedence.
 
-=head1 DIFF_DOC_TEXT_DIFF_CMD
+=head2 DIFF_DOC_TEXT_DIFF_CMD
 
 String. Can be used to set path to diff command. The defaultl is L<diffwc> if
 available in PATH, or C<diff>. Takes precedence over L</DIFF_CMD>.
